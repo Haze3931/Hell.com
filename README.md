@@ -1,2 +1,3 @@
-# Jigoku.net
+# Jigoku.com
 Website from Jigoku Shōjo
+
