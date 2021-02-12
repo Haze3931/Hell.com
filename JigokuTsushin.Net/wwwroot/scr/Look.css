@@ -1,8 +1,4 @@
-﻿body {
-    background-color: black;
-}
-
-.MainDiv {
+﻿.MainDiv {
     visibility: hidden;
     text-align: center;
     font-size: 30px;

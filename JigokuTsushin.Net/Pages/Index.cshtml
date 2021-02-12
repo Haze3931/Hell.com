@@ -1,0 +1,30 @@
+﻿@page
+@model IndexModel
+@{
+    ViewData["Title"] = "Home page";
+}
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <style>
+        body {
+            background-color: black;
+        }
+    </style>
+    <meta charset="utf-8" />
+    <link rel="stylesheet" href="~/scr/Look.css" />
+    <script src="~/scr/Pusher.js"></script>
+</head>
+<body class="Hell" onload="setTimeout(Pusher,2000)">
+    <div><img src="~/scr/flame.gif" id="opener"></div>
+    <div class="MainDiv">
+        <p style="color:white">あなたの怨み、晴らします。</p>
+        <form method="post">
+            <input id="name" type="text" asp-for="correspondence.Name">
+            <div>
+                <input id="Revenge" type="submit" value="送信"/>
+            </div>
+        </form>
+    </div>
+</body>
+</html>

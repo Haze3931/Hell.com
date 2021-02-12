@@ -2,10 +2,15 @@
 
   <PropertyGroup>
     <TargetFramework>netcoreapp3.1</TargetFramework>
+    <ApplicationIcon>wwwroot\icon.ico</ApplicationIcon>
   </PropertyGroup>
 
   <ItemGroup>
-    <Folder Include="Jobs\" />
+    <Content Include="Correspondence.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Correspondance\" />
   </ItemGroup>
 
 </Project>
