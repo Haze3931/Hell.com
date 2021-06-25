@@ -21,7 +21,7 @@ p {
 }
 
 #opener {
-    text-align: center;
-    padding-left: 14cm;
-    padding-top: 2cm;
+  display: block;
+  margin-left: auto;
+  margin-right: auto;
 }
