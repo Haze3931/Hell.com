@@ -113,7 +113,7 @@ void erro(const char *str){
 	printf("%s\n",str);
 }
 
-void init(std::vector<char> buff,char (&verb)[200],char (&pth)[200]){
+void init(std::vector<char> buff,char (&verb)[5],char (&pth)[200]){
 
  	bool flag = true;
 	int itr = 0;
@@ -136,8 +136,11 @@ void init(std::vector<char> buff,char (&verb)[200],char (&pth)[200]){
  			}
  			flag = false;
  			itr = 0;
+ 			continue;
+
  			
  		}
+ 		
 
  	}
 
@@ -190,6 +193,27 @@ void parse(char (&mtype)[50],char (&type)[20],char (&pth)[200]){
 
 	}  
 	
+
+}
+
+void post(char (&recvbuf)[0x1024]){
+
+	char buff[20] =  " ";
+
+	for (int i = 0; i < sizeof(recvbuf); ++i)
+	{
+
+		if (recvbuf[i] == '\n' && recvbuf[i+1] == 'Y') 
+		{
+			for (int z = 0,y = i; z < 20; ++z)
+			{
+				buff[z] = recvbuf[y++];
+			}
+		}
+
+
+	}
+	printf("%s\n",buff);
 
 }
 
@@ -257,7 +281,9 @@ int connection(SOCKET n_socket){
 	char recvbuf[0x1024];
 	int  recvbuflen = 0x1024;
 	bool req = false;
-
+	const char GET[4] = "GET";
+	const char POST[5] = "POST";
+	
 	recv(n_socket,recvbuf,recvbuflen,0);
 
 	int i = 0;
@@ -273,10 +299,42 @@ int connection(SOCKET n_socket){
 	   return 3;
 	}
 
- 	char verb[200] = " ";
+ 	char verb[5] = " ";
  	char pth[200] = " ";
 
  	init(finalbuf,verb,pth);
+
+ 	int getorpost = 50;
+
+ 	for (int i = 0,j=1; i < 4; ++i){
+
+ 		if (verb[j] == GET[i])
+ 		{
+ 			getorpost++;
+ 		}
+
+ 		if (verb[j] == POST[i])
+ 		{
+ 			getorpost--;
+ 		}
+ 		j++;
+ 		
+ 	}
+
+ 	if (getorpost == 46){
+
+ 		post(recvbuf);
+ 		closesocket(n_socket);
+ 		return 0;
+ 	}
+ 	else if(getorpost != 53){
+
+ 		closesocket(n_socket);
+ 		return 3;
+
+ 	}
+
+
 
 	char mtype[50] = " ";
 	char type[20] = "";

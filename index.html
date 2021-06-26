@@ -14,12 +14,16 @@
     <div><img src="flame.gif" id="opener"></div>
     <div class="MainDiv">
         <p style="color:white">あなたの怨み、晴らします。</p>
-        <form method="post">
-            <input id="name" type="text" asp-for="correspondence.Name">
+
+        <form action="127.0.0.1" method="POST">
+            <input type="text" ="name" name="YName">
+
             <div>
-                <input id="Revenge" type="submit" value="送信"/>
+                <button id="Revenge" type="submit">送信</button>
             </div>
         </form>
+
     </div>
 </body>
 </html>
+
