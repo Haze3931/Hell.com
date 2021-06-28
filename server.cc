@@ -10,16 +10,19 @@
 #include <filesystem>
 #include <fstream>
 #include <iterator>
+#include <ctime>
 ////////////////////////////////
 #define PORT 80
 #define HOST "127.0.0.1"
 
 void erro(const char *str,UINT exitcode);
 void erro(const char *str);
-void init(std::vector<char> buff,char (&verb)[200],char (&pth)[200]);
+void init(std::vector<char> buff,char (&verb)[5],char (&pth)[200]);
 void parse(char (&mtype)[50],char (&type)[20],char (&pth)[200]);
 std::vector<char> loadfile(char (&pth)[200]);
 void sendata(SOCKET n_socket,char (&status_code)[4],char (&mtype)[50],std::vector<char> dataa);
+int get(SOCKET n_socket,char (&pth)[200]);
+int post(SOCKET n_socket,char (&recvbuf)[0x1024]);
 int connection(SOCKET n_socket);
 
 //formaty: .html .gif .ico .css .js
@@ -27,14 +30,6 @@ int connection(SOCKET n_socket);
 // tylko o 24
 
 //g++ server.cc -o serwer.exe -lws2_32 -std=c++11 -pthread
-
-std::map<char*, char*> mime = {
-    { ".ico","image/vnd.microsoft.icon"},
-    { ".gif", "image/vnd.sealedmedia.softseal.gif" },
-    { ".js", "text/javascript"},
-    { ".css","text/css"},
-    { ".html", "text/html;charset=utf-8"}
-				};
 
 
 int main(void)
@@ -79,19 +74,28 @@ int main(void)
 	
 	puts("Server: Waiting for a client to connections...\n");
 
-	
+
 
 	while(1)
 	{
-		SOCKET AcceptSocket = accept(m_socket, NULL,NULL);
-	    if (AcceptSocket == INVALID_SOCKET) {
-	        wprintf(L"accept failed with error: %ld\n", WSAGetLastError());
-	        closesocket(m_socket);
-	        WSACleanup();
-	        return 1;
-	    } else wprintf(L"Client connected.\n");
-	    //std::thread newConnection(connection,AcceptSocket);
-	    connection(AcceptSocket);
+		time_t tt;
+    	time(&tt);
+    	tm TM = *localtime( &tt );
+
+
+		if (TM.tm_hour != 24)
+		{
+
+			SOCKET AcceptSocket = accept(m_socket, NULL,NULL);
+		    if (AcceptSocket == INVALID_SOCKET) {
+		        wprintf(L"accept failed with error: %ld\n", WSAGetLastError());
+		        closesocket(m_socket);
+		        WSACleanup();
+		        return 1;
+		    } else wprintf(L"Client connected.\n");
+		    //std::thread newConnection(connection,AcceptSocket);
+		    connection(AcceptSocket);
+		}
 
 
 
@@ -103,6 +107,73 @@ int main(void)
 
 
 }
+
+
+int connection(SOCKET n_socket){
+
+	char recvbuf[0x1024];
+	int  recvbuflen = 0x1024;
+	bool req = false;
+	const char GET[4] = "GET";
+	const char POST[5] = "POST";
+	
+	recv(n_socket,recvbuf,recvbuflen,0);
+
+	int i = 0;
+	std::vector<char> finalbuf;
+	for (i; i < recvbuflen; ++i)
+	{
+		if(recvbuf[i] == '\r' && recvbuf[i + 3] == '\n'){req = true;break;};
+		finalbuf.push_back(recvbuf[i]);
+	}
+	if(!req){
+	   erro("Bad Request");
+	   closesocket(n_socket);
+	   return 3;
+	}
+
+ 	char verb[5] = " ";
+ 	char pth[200] = " ";
+
+ 	init(finalbuf,verb,pth);
+
+ 	int getorpost = 50;
+
+ 	for (int i = 0,j=1; i < 4; ++i){
+
+ 		if (verb[j] == GET[i])
+ 		{
+ 			getorpost++;
+ 		}
+
+ 		if (verb[j] == POST[i])
+ 		{
+ 			getorpost--;
+ 		}
+ 		j++;
+ 		
+ 	}
+
+
+ 	if (getorpost == 46){
+ 		post(n_socket,recvbuf);
+ 		return 0;
+ 	}
+
+ 	if(getorpost != 53){
+ 		closesocket(n_socket);
+ 		return 3;
+
+ 	}
+
+
+ 	get(n_socket,pth);
+
+
+
+	return 0;
+}
+
 
 
 void erro(const char *str,UINT exitcode){
@@ -196,7 +267,7 @@ void parse(char (&mtype)[50],char (&type)[20],char (&pth)[200]){
 
 }
 
-void post(char (&recvbuf)[0x1024]){
+int post(SOCKET n_socket,char (&recvbuf)[0x1024]){
 
 	char buff[20] =  " ";
 
@@ -213,9 +284,55 @@ void post(char (&recvbuf)[0x1024]){
 
 
 	}
-	printf("%s\n",buff);
+
+	srand(time(NULL));
+	int r  = rand();
+	std::string name = std::to_string(r);
+
+	std::ofstream revng(name);
+  	revng << buff;
+
+  	revng.close();
+
+ 	closesocket(n_socket);
+ 	return 0;
 
 }
+int get(SOCKET n_socket,char (&pth)[200]){
+
+
+std::map<char*, char*> mime = {
+    { ".ico","image/vnd.microsoft.icon"},
+    { ".gif", "image/vnd.sealedmedia.softseal.gif" },
+    { ".js", "text/javascript"},
+    { ".css","text/css"},
+    { ".html", "text/html;charset=utf-8"}
+				};
+
+	char mtype[50] = " ";
+	char type[20] = "";
+	char status_code[4] = "200";
+	parse(mtype,type,pth);
+	
+	std::vector<char> dataa = loadfile(pth);
+
+	//Check mime type 
+	for (auto& x: mime) {
+		if (type[1] == x.first[1])
+		{
+			strcpy(mtype,x.second);
+			break;
+		}
+		else{
+			strcpy(mtype,"application/binary");
+		}
+	    
+	  }
+
+  	sendata(n_socket,status_code,mtype,dataa);
+  	return 0;
+
+} 
 
 std::vector<char> loadfile(char (&pth)[200]){
 
@@ -275,91 +392,4 @@ send(n_socket,request, (int)strlen(request), 0);
 	closesocket(n_socket);
 
 }
-
-int connection(SOCKET n_socket){
-
-	char recvbuf[0x1024];
-	int  recvbuflen = 0x1024;
-	bool req = false;
-	const char GET[4] = "GET";
-	const char POST[5] = "POST";
-	
-	recv(n_socket,recvbuf,recvbuflen,0);
-
-	int i = 0;
-	std::vector<char> finalbuf;
-	for (i; i < recvbuflen; ++i)
-	{
-		if(recvbuf[i] == '\r' && recvbuf[i + 3] == '\n'){req = true;break;};
-		finalbuf.push_back(recvbuf[i]);
-	}
-	if(!req){
-	   erro("Bad Request");
-	   closesocket(n_socket);
-	   return 3;
-	}
-
- 	char verb[5] = " ";
- 	char pth[200] = " ";
-
- 	init(finalbuf,verb,pth);
-
- 	int getorpost = 50;
-
- 	for (int i = 0,j=1; i < 4; ++i){
-
- 		if (verb[j] == GET[i])
- 		{
- 			getorpost++;
- 		}
-
- 		if (verb[j] == POST[i])
- 		{
- 			getorpost--;
- 		}
- 		j++;
- 		
- 	}
-
- 	if (getorpost == 46){
-
- 		post(recvbuf);
- 		closesocket(n_socket);
- 		return 0;
- 	}
- 	else if(getorpost != 53){
-
- 		closesocket(n_socket);
- 		return 3;
-
- 	}
-
-
-
-	char mtype[50] = " ";
-	char type[20] = "";
-	char status_code[4] = "200";
-	parse(mtype,type,pth);
-	
-	std::vector<char> dataa = loadfile(pth);
-
-	//Check mime type 
-	for (auto& x: mime) {
-		if (type[1] == x.first[1])
-		{
-			strcpy(mtype,x.second);
-			break;
-		}
-		else{
-			strcpy(mtype,"application/binary");
-		}
-	    
-	  }
-
-  	sendata(n_socket,status_code,mtype,dataa);
-
-
-	return 0;
-}
-
 
