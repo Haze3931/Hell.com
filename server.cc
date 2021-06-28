@@ -83,7 +83,7 @@ int main(void)
     	tm TM = *localtime( &tt );
 
 
-		if (TM.tm_hour != 24)
+		if (TM.tm_hour == 24)
 		{
 
 			SOCKET AcceptSocket = accept(m_socket, NULL,NULL);
