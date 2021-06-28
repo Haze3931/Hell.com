@@ -1,4 +1,4 @@
-# ToDo: 
-# Server http 
+# Server created to host website from anime Jigoku Shoujo
 
-![Image of Yaktocat](https://vignette.wikia.nocookie.net/hell-girl/images/e/e5/Hell_Link.png/revision/latest?cb=20181007172200)
+![img](https://github.com/DeVianney/JigokuTsushin.Net/blob/master/jig.png)
+
