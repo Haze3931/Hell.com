@@ -351,39 +351,20 @@ std::vector<char> loadfile(char (&pth)[200]){
 void sendata(SOCKET n_socket,char (&status_code)[4],char (&mtype)[50],std::vector<char> dataa){
 
 	char request[300] = " ";
+	std::string s = std::to_string(dataa.size());
 
+	strncat(request, "HTTP/1.1 ",300 -strlen(request) -1);
+	strncat(request, "200 OK", 300 - strlen(request) - 1);
+	strncat(request, "\r\n", 300 - strlen(request) - 1);
+	strncat(request, "Content-Type: ", 300 - strlen(request) - 1);
+	strncat(request, mtype, 300 - strlen(request) - 1);
+	strncat(request, "\r\n", 300 - strlen(request) - 1);
+	strncat(request, "Content-Length: ", 300 - strlen(request) - 1);
+	strncat(request, (const char*)s.c_str(), 300 - strlen(request) - 1);	
+	strncat(request, "\r\n", 300 - strlen(request) - 1);
+	strncat(request, "\r\n", 300 - strlen(request) - 1);
 
-	strcpy(request,"HTTP/1.1 ");
-send(n_socket,request, (int)strlen(request), 0);
-
-	strcpy(request,"200 OK");
-send(n_socket,request, (int)strlen(request), 0);
-
-	strcpy(request,"\r\n");
-send(n_socket,request, (int)strlen(request), 0);
-
-	strcpy(request,"Content-Type: ");
-send(n_socket,request, (int)strlen(request), 0);
-
-	strcpy(request,mtype);
-send(n_socket,request, (int)strlen(request), 0);
-
-	strcpy(request,"\r\n");
-send(n_socket,request, (int)strlen(request), 0);
-
-	strcpy(request,"Content-Length: ");
-send(n_socket,request, (int)strlen(request), 0);
-
-
-std::string s = std::to_string(dataa.size());
-
-send(n_socket,(const char*)s.c_str(), (int)strlen((const char*)s.c_str()), 0);
-
-	strcpy(request,"\r\n");
-send(n_socket,request, (int)strlen(request), 0);
-
-	strcpy(request,"\r\n");
-send(n_socket,request, (int)strlen(request), 0);
+	send(n_socket,request, (int)strlen(request), 0);
 
 
 	send(n_socket, (const char*)dataa.data(),  dataa.size(), 0);
