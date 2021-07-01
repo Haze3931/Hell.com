@@ -7,7 +7,6 @@
 #include <map>
 #include <thread>
 #include <vector>
-#include <filesystem>
 #include <fstream>
 #include <iterator>
 #include <ctime>
@@ -293,6 +292,9 @@ int post(SOCKET n_socket,char (&recvbuf)[0x1024]){
   	revng << buff;
 
   	revng.close();
+
+	send(n_socket,"HTTP 201: Created", 18, 0);
+
 
  	closesocket(n_socket);
  	return 0;
